@@ -340,6 +340,8 @@ async def run_single_cycle():
                 logging.info(f"📝 历史记录已更新: {len(history.downloads)} 张照片")
             else:
                 logging.info("\n✅ 没有新照片需要下载")
+                # 仍然保存空的历史文件，确保后续 git 提交时文件存在
+                history.save_history()
 
             await browser.close()
             success = True
