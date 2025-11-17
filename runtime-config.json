@@ -1,7 +1,7 @@
 {
-  "enabled": false,
+  "enabled": true,
   "interval": 1,
-  "clearHistory": true,
+  "clearHistory": false,
   "lastRunTime": null,
   "lastRunSuccess": null,
   "taskConfig": {
