@@ -2,8 +2,8 @@ name: Photo Download Monitor
 
 on:
   # 定时触发（每5分钟）- 仅在 github_action 分支
-  # schedule:
-  # - cron: '*/5 * * * *'
+  schedule:
+  - cron: '*/2 * * * *'
 
   # 支持手动触发
   workflow_dispatch:
