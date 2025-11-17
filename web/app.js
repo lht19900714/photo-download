@@ -81,8 +81,8 @@ function validateAndSaveConfig() {
     }
 
     // 验证间隔
-    if (config.interval < 10) {
-        alert('❌ 检查间隔最小为 10 分钟');
+    if (config.interval < 1) {
+        alert('❌ 检查间隔最小为 1 分钟');
         return null;
     }
 
