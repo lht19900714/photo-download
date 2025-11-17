@@ -22,7 +22,8 @@ except ImportError:
     sys.exit(1)
 
 
-DEFAULT_SCOPES = ["files.content.write", "files.content.read"]
+# 默认权限需要包含 account_info.read，否则 SDK 无法调用 users_get_current_account
+DEFAULT_SCOPES = ["files.content.write", "files.content.read", "account_info.read"]
 
 
 def prompt(prompt_text: str, default: str | None = None) -> str:

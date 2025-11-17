@@ -128,7 +128,7 @@ uv run playwright install chromium
 
    c. 进入应用设置页面：
       - 切换到 **Permissions** 标签页
-      - 勾选 `files.content.write` 和 `files.content.read`
+      - 勾选 `files.content.write`、`files.content.read`、`account_info.read`
       - 点击 "Submit"
 
    d. 切换到 **Settings** 标签页：
