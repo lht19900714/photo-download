@@ -23,6 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: github_action
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
@@ -57,5 +58,5 @@ jobs:
           git config user.email "actions@github.com"
           git add runtime-config.json downloaded.json
           git diff --staged --quiet || git commit -m "Update download history [skip ci]"
-          git pull --rebase
-          git push
+          git pull --rebase origin github_action
+          git push origin HEAD:github_action
