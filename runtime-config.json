@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "interval": 10,
   "clearHistory": true,
   "lastRunTime": null,
