@@ -1,0 +1,105 @@
+{
+  "total_photos": 6,
+  "sample_size": 5,
+  "analysis_results": [
+    {
+      "index": 0,
+      "attributes": {
+        "class": "photo-item"
+      },
+      "data_attributes": {},
+      "thumbnail_sources": [
+        "img[src]: //pb.plusx.cn/plus/immediate/35272685/2025111623814917/1060536x354blur2.jpg~tplv-9lv23dm2t1-wm-display-v1:0:watermark/1/image/dG9zLWNuLWktOWx2MjNkbTJ0MS9wbHVzL2ltbWVkaWF0ZS8zNzgxNTY3LzIwMjIxMDI2MTc0ODEyNDc3L3BsdXMucG5n/dissolve/100/gravity/SouthEast/dx/8/dy/8/ws/0.15/wst/2:480:1000:gif.avif?sign=1763305714-CrpKVoww-imagex-e6d588aacdde13e90742fe0b2c90cc59",
+        "background-image: none"
+      ],
+      "unique_identifiers": {
+        "id": "",
+        "class": "photo-item",
+        "aria_label": null,
+        "title": null,
+        "key": null
+      }
+    },
+    {
+      "index": 1,
+      "attributes": {
+        "class": "photo-item"
+      },
+      "data_attributes": {},
+      "thumbnail_sources": [
+        "img[src]: //pb.plusx.cn/plus/immediate/35272685/2025111623814548/124536x354.jpg~tplv-9lv23dm2t1-wm-display-v1:0:watermark/1/image/dG9zLWNuLWktOWx2MjNkbTJ0MS9wbHVzL2ltbWVkaWF0ZS8zNzgxNTY3LzIwMjIxMDI2MTc0ODEyNDc3L3BsdXMucG5n/dissolve/100/gravity/SouthEast/dx/8/dy/8/ws/0.15/wst/2:480:1000:gif.avif?sign=1763305714-cJS0bhQr-imagex-7808ccbea4372b0220c806b29db2053b",
+        "background-image: none"
+      ],
+      "unique_identifiers": {
+        "id": "",
+        "class": "photo-item",
+        "aria_label": null,
+        "title": null,
+        "key": null
+      }
+    },
+    {
+      "index": 2,
+      "attributes": {
+        "class": "photo-item"
+      },
+      "data_attributes": {},
+      "thumbnail_sources": [
+        "img[src]: //pb.plusx.cn/plus/immediate/35272685/2025111623814547/300.jpg~tplv-9lv23dm2t1-wm-display-v1:0:watermark/1/image/dG9zLWNuLWktOWx2MjNkbTJ0MS9wbHVzL2ltbWVkaWF0ZS8zNzgxNTY3LzIwMjIxMDI2MTc0ODEyNDc3L3BsdXMucG5n/dissolve/100/gravity/SouthEast/dx/3/dy/7/ws/0.03862781954887218/wst/3:480:1000:gif.avif?sign=1763305714-ORLmmD66-imagex-ac2b558b069b2de5dfecf0a2d972c601",
+        "background-image: none"
+      ],
+      "unique_identifiers": {
+        "id": "",
+        "class": "photo-item",
+        "aria_label": null,
+        "title": null,
+        "key": null
+      }
+    },
+    {
+      "index": 3,
+      "attributes": {
+        "class": "photo-item"
+      },
+      "data_attributes": {},
+      "thumbnail_sources": [
+        "img[src]: //pb.plusx.cn/plus/immediate/35272685/2025111623814548/521536x354.jpg~tplv-9lv23dm2t1-wm-display-v1:0:watermark/1/image/dG9zLWNuLWktOWx2MjNkbTJ0MS9wbHVzL2ltbWVkaWF0ZS8zNzgxNTY3LzIwMjIxMDI2MTc0ODEyNDc3L3BsdXMucG5n/dissolve/100/gravity/SouthEast/dx/8/dy/8/ws/0.15/wst/2:480:1000:gif.avif?sign=1763305714-0q5yzAe9-imagex-557c22015af5d362115dd1130bca6d54",
+        "background-image: none"
+      ],
+      "unique_identifiers": {
+        "id": "",
+        "class": "photo-item",
+        "aria_label": null,
+        "title": null,
+        "key": null
+      }
+    },
+    {
+      "index": 4,
+      "attributes": {
+        "class": "photo-item"
+      },
+      "data_attributes": {},
+      "thumbnail_sources": [
+        "img[src]: //pb.plusx.cn/plus/immediate/35272685/2025111623622799/picsum20251116230350002421546e5.jpg~tplv-9lv23dm2t1-wm-display-v1:0:watermark/1/image/dG9zLWNuLWktOWx2MjNkbTJ0MS9wbHVzL2ltbWVkaWF0ZS8zNzgxNTY3LzIwMjIxMDI2MTc0ODEyNDc3L3BsdXMucG5n/dissolve/100/gravity/SouthEast/dx/3/dy/7/ws/0.03862781954887218/wst/3:480:1000:gif.avif?sign=1763305598-ijRIRgre-imagex-62b2082debcb42d3c1c7c2c24e7134bd",
+        "background-image: none"
+      ],
+      "unique_identifiers": {
+        "id": "",
+        "class": "photo-item",
+        "aria_label": null,
+        "title": null,
+        "key": null
+      }
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": 99,
+      "method": "元素索引 + 文件名组合",
+      "description": "未找到稳定的唯一标识符，使用组合方案",
+      "implementation": "使用元素在列表中的相对位置+文件名生成指纹",
+      "reliability": "⭐⭐⭐ (不推荐)"
+    }
+  ]
+}

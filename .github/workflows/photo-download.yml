@@ -1,0 +1,56 @@
+name: Photo Download Monitor
+
+on:
+  # 定时触发（每5分钟）- 仅在 github_action 分支
+  schedule:
+    - cron: '*/5 * * * *'
+
+  # 支持手动触发
+  workflow_dispatch:
+
+  # 仅在 github_action 分支运行
+  push:
+    branches:
+      - github_action
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # 任务超时保护
+
+    # 仅在 runtime-config.json 存在时运行（避免首次初始化失败）
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv package manager
+        run: pip install uv
+
+      - name: Install project dependencies
+        run: uv sync
+
+      - name: Install Playwright browsers
+        run: uv run playwright install chromium --with-deps
+
+      - name: Run GitHub Actions runner
+        env:
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+        run: uv run python github_actions_runner.py
+        continue-on-error: true  # 即使运行失败也继续提交配置
+
+      - name: Commit and push changes
+        if: always()  # 无论上一步是否成功都执行
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add runtime-config.json downloaded.json
+          git diff --staged --quiet || git commit -m "Update download history [skip ci]"
+          git pull --rebase
+          git push

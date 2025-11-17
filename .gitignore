@@ -1,0 +1,49 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Downloaded photos (本地存储目录，如果启用本地保存)
+photos/
+
+# Log files
+*.log
+output.log
+
+# OS-specific files
+.DS_Store                 # macOS
+Thumbs.db                 # Windows
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+.pytest_cache/
+
+# Project documentation
+CLAUDE.md
+notes.txt
+
+# ============================================
+# 重要说明：以下文件不应添加到 .gitignore
+# ============================================
+# ❌ 不要忽略 runtime-config.json
+#    - GitHub Actions 需要读取此文件判断运行状态
+#    - Web 面板通过 GitHub API 更新此文件
+#    - 必须提交到 github_action 分支保持状态同步
+#
+# ❌ 不要忽略 downloaded.json
+#    - 记录已下载照片的历史（基于指纹去重）
+#    - GitHub Actions 需要此文件避免重复下载
+#    - 必须提交到 github_action 分支在运行之间保持历史
+# ============================================

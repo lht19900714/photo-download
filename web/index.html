@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhotoPlus 下载监控面板</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📸 PhotoPlus 下载监控面板</h1>
+            <p class="subtitle">自动下载直播照片并上传到 Dropbox</p>
+        </header>
+
+        <!-- 配置区 -->
+        <section class="card">
+            <h2>⚙️ 配置信息</h2>
+
+            <div class="form-group">
+                <label for="github-token">GitHub Personal Access Token *</label>
+                <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxx">
+                <small>需要 repo 和 workflow 权限 | <a href="#" id="token-help">如何获取？</a></small>
+            </div>
+
+            <div class="form-group">
+                <label for="github-repo">GitHub 仓库 *</label>
+                <input type="text" id="github-repo" placeholder="username/photo-download">
+                <small>格式: owner/repo</small>
+            </div>
+
+            <div class="form-group">
+                <label for="target-url">PhotoPlus 直播页面 URL *</label>
+                <input type="url" id="target-url" placeholder="https://live.photoplus.cn/live/pc/xxxxx/#/live">
+            </div>
+
+            <div class="form-group">
+                <label for="dropbox-token">Dropbox Access Token *</label>
+                <input type="password" id="dropbox-token" placeholder="sl.xxxxxxxxxx">
+                <small><a href="https://www.dropbox.com/developers/apps" target="_blank">获取 Token</a></small>
+            </div>
+
+            <div class="form-group">
+                <label for="dropbox-path">Dropbox 存储路径</label>
+                <input type="text" id="dropbox-path" value="/photos" placeholder="/photos">
+            </div>
+
+            <div class="form-group">
+                <label for="interval">检查间隔（分钟）</label>
+                <input type="number" id="interval" value="10" min="10" step="5">
+                <small>最小 10 分钟（避免频繁触发 Actions）</small>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" id="clear-history">
+                    <span>清除历史记录（首次运行或重新开始时勾选）</span>
+                </label>
+                <small>勾选后下次运行将清空已下载记录，重新下载所有照片</small>
+            </div>
+
+            <button id="save-config-btn" class="btn btn-secondary">💾 保存配置</button>
+        </section>
+
+        <!-- 控制区 -->
+        <section class="card">
+            <h2>🎮 监控控制</h2>
+
+            <div class="control-buttons">
+                <button id="start-btn" class="btn btn-success">▶️ 开始监控</button>
+                <button id="stop-btn" class="btn btn-danger" disabled>⏹️ 停止监控</button>
+                <button id="manual-run-btn" class="btn btn-primary">⚡ 立即执行一次</button>
+            </div>
+
+            <div class="status-panel">
+                <div class="status-item">
+                    <span class="label">监控状态:</span>
+                    <span id="monitor-status" class="status-badge status-inactive">未初始化</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">上次运行:</span>
+                    <span id="last-run-time">--</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">下次运行:</span>
+                    <span id="next-run-time">--</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">运行结果:</span>
+                    <span id="last-result">--</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 日志区 -->
+        <section class="card">
+            <h2>📋 运行日志</h2>
+            <button id="refresh-logs-btn" class="btn btn-secondary btn-sm">🔄 刷新</button>
+
+            <div id="log-container" class="log-container">
+                <p class="loading">加载中...</p>
+            </div>
+        </section>
+
+        <!-- 帮助信息 -->
+        <section class="card help-section" id="help-section" style="display: none;">
+            <h2>📖 如何获取 GitHub Token？</h2>
+            <ol>
+                <li>访问 <a href="https://github.com/settings/tokens/new" target="_blank">GitHub Token 设置页面</a></li>
+                <li>填写 Note: <code>PhotoPlus Downloader</code></li>
+                <li>设置过期时间（建议选择 No expiration）</li>
+                <li>勾选权限:
+                    <ul>
+                        <li><code>repo</code> (完整仓库访问)</li>
+                        <li><code>workflow</code> (触发 Actions)</li>
+                    </ul>
+                </li>
+                <li>点击 "Generate token" 并复制 Token</li>
+            </ol>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('help-section').style.display='none'">关闭</button>
+        </section>
+
+        <!-- Dropbox Secret 设置提示 -->
+        <section class="card warning-section" id="dropbox-warning" style="display: none;">
+            <h2>⚠️ 需要手动配置 Dropbox Secret</h2>
+            <p>由于浏览器限制，无法自动加密 Secret。请按以下步骤手动配置：</p>
+            <ol>
+                <li>访问 GitHub 仓库的 <strong>Settings → Secrets and variables → Actions</strong></li>
+                <li>点击 "New repository secret"</li>
+                <li>Name: <code>DROPBOX_ACCESS_TOKEN</code></li>
+                <li>Value: <input type="text" id="dropbox-token-copy" readonly style="width: 100%; margin: 5px 0;"></li>
+                <li>点击 "Add secret"</li>
+            </ol>
+            <button id="copy-token-btn" class="btn btn-primary btn-sm">📋 复制 Token</button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('dropbox-warning').style.display='none'">关闭</button>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

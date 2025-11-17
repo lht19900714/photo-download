@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "interval": 10,
+  "clearHistory": false,
+  "lastRunTime": null,
+  "lastRunSuccess": null,
+  "taskConfig": {
+    "targetUrl": "https://live.photoplus.cn/live/pc/xxxxx/#/live",
+    "dropboxPath": "/photos"
+  }
+}

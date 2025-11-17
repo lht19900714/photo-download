@@ -1,0 +1,10 @@
+[project]
+name = "photo-downloader"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "dropbox>=12.0.2",
+    "playwright>=1.55.0",
+    "requests>=2.32.5",
+]
