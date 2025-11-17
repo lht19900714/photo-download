@@ -110,22 +110,58 @@ uv run playwright install chromium
    - ✅ `workflow` (触发 GitHub Actions)
 5. 点击 "Generate token" 并**复制保存 Token**
 
-#### 4. 配置 GitHub Secrets
+#### 4. 配置 GitHub Secrets（Dropbox 认证）
 
-**配置 Dropbox Access Token**（必需）：
+⚠️ **重要说明**：Dropbox 现在推荐使用 **Refresh Token** 而不是 Access Token，以支持长期运行的自动化任务。
 
-1. **获取 Dropbox Token**：
-   - 访问 [Dropbox App Console](https://www.dropbox.com/developers/apps)
-   - Create app → Scoped access → Full Dropbox → 输入应用名称
-   - Permissions 标签页 → 勾选 `files.content.write`
-   - Settings 标签页 → Generate access token → **复制保存 Token**
+**方式 1：使用 Refresh Token（推荐，永久有效）**
+
+1. **获取 Dropbox Refresh Token**：
+
+   a. 访问 [Dropbox App Console](https://www.dropbox.com/developers/apps)
+
+   b. 如果没有应用，创建新应用：
+      - 点击 "Create app"
+      - 选择 **Scoped access**
+      - 选择 **Full Dropbox**
+      - 输入应用名称（如：`PhotoPlus Downloader`）
+
+   c. 进入应用设置页面：
+      - 切换到 **Permissions** 标签页
+      - 勾选 `files.content.write` 和 `files.content.read`
+      - 点击 "Submit"
+
+   d. 切换到 **Settings** 标签页：
+      - 找到 **OAuth 2** 部分
+      - 复制 **App key**（保存备用）
+      - 复制 **App secret**（保存备用）
+      - 在 **Generated access token** 区域，点击 "Generate" 按钮
+      - 选择 **"Generate refresh token"**（而不是 access token）
+      - 复制生成的 **Refresh Token**
 
 2. **配置到 GitHub Secrets**：
-   - 访问 GitHub 仓库的 **Settings → Secrets and variables → Actions**
-   - 点击 "New repository secret"
+
+   访问 GitHub 仓库的 **Settings → Secrets and variables → Actions**，添加以下 3 个 Secrets：
+
+   | Secret 名称 | 值 | 说明 |
+   |------------|---|------|
+   | `DROPBOX_REFRESH_TOKEN` | `your_refresh_token` | 步骤 1d 生成的 Refresh Token |
+   | `DROPBOX_APP_KEY` | `your_app_key` | 步骤 1d 的 App key |
+   | `DROPBOX_APP_SECRET` | `your_app_secret` | 步骤 1d 的 App secret |
+
+**方式 2：使用 Access Token（旧方式，4小时有效期，不推荐）**
+
+仅作为临时测试使用，不适合长期运行：
+
+1. 访问 [Dropbox App Console](https://www.dropbox.com/developers/apps)
+2. 进入应用的 Settings 标签页
+3. 在 **Generated access token** 区域，点击 "Generate"
+4. 复制生成的 Access Token
+5. 在 GitHub Secrets 中添加：
    - Name: `DROPBOX_ACCESS_TOKEN`
-   - Value: 粘贴您的 Dropbox Token
-   - 点击 "Add secret"
+   - Value: 粘贴 Access Token
+
+⚠️ **注意**：Access Token 仅有 4 小时有效期，过期后需要重新生成，不适合自动化场景。
 
 #### 5. 使用 Web 控制面板
 
@@ -222,9 +258,10 @@ enabled = false? → 退出（< 5秒，不消耗额度）
 - 检查仓库是否有分支保护规则
 
 **Q: Dropbox 上传失败**
-- 检查 Token 是否有效（可能过期）
-- 检查 Secret 是否正确配置
-- 查看 Actions 日志中的错误信息
+- **如果提示 `expired_access_token`**：说明使用的是短期 Access Token（4小时有效期），请切换到 Refresh Token 方式
+- **如果提示 `Unable to refresh access token`**：检查是否正确配置了 `DROPBOX_REFRESH_TOKEN`、`DROPBOX_APP_KEY` 和 `DROPBOX_APP_SECRET`
+- 检查 Permissions 是否勾选了 `files.content.write`
+- 查看 Actions 日志中的详细错误信息
 
 **Q: 如何重置并重新下载所有照片？**
 - 勾选 "清除历史记录" checkbox
