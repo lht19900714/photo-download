@@ -110,12 +110,22 @@ uv run playwright install chromium
    - ✅ `workflow` (触发 GitHub Actions)
 5. 点击 "Generate token" 并**复制保存 Token**
 
-#### 4. 获取 Dropbox Access Token
+#### 4. 配置 GitHub Secrets
 
-1. 访问 [Dropbox App Console](https://www.dropbox.com/developers/apps)
-2. Create app → Scoped access → Full Dropbox → 输入应用名称
-3. Permissions 标签页 → 勾选 `files.content.write`
-4. Settings 标签页 → Generate access token → **复制保存 Token**
+**配置 Dropbox Access Token**（必需）：
+
+1. **获取 Dropbox Token**：
+   - 访问 [Dropbox App Console](https://www.dropbox.com/developers/apps)
+   - Create app → Scoped access → Full Dropbox → 输入应用名称
+   - Permissions 标签页 → 勾选 `files.content.write`
+   - Settings 标签页 → Generate access token → **复制保存 Token**
+
+2. **配置到 GitHub Secrets**：
+   - 访问 GitHub 仓库的 **Settings → Secrets and variables → Actions**
+   - 点击 "New repository secret"
+   - Name: `DROPBOX_ACCESS_TOKEN`
+   - Value: 粘贴您的 Dropbox Token
+   - 点击 "Add secret"
 
 #### 5. 使用 Web 控制面板
 
@@ -124,22 +134,10 @@ uv run playwright install chromium
    - **GitHub Personal Access Token**: 步骤 3 获取的 Token
    - **GitHub 仓库**: 格式 `username/photo-download`
    - **PhotoPlus 直播页面 URL**: 目标直播页面完整 URL
-   - **Dropbox Access Token**: 步骤 4 获取的 Token
    - **Dropbox 存储路径**: 默认 `/photos`（自动创建）
-   - **检查间隔**: 建议 10 分钟以上（最小 10 分钟）
-3. 点击 **"💾 保存配置"**
-4. **首次运行**：勾选 "清除历史记录" checkbox
-5. 点击 **"▶️ 开始监控"**
-
-#### 6. 手动配置 Dropbox Secret（仅首次需要）
-
-由于浏览器安全限制，需要手动配置 Dropbox Token 到 GitHub Secrets：
-
-1. 访问 GitHub 仓库的 **Settings → Secrets and variables → Actions**
-2. 点击 "New repository secret"
-3. Name: `DROPBOX_ACCESS_TOKEN`
-4. Value: 粘贴您的 Dropbox Token
-5. 点击 "Add secret"
+   - **检查间隔**: 建议 60 分钟（默认值，最小 10 分钟）
+3. **首次运行**：勾选 "清除历史记录" checkbox
+4. 点击 **"▶️ 开始监控"**（配置会自动保存）
 
 ✅ 完成！GitHub Actions 将按设定间隔自动执行下载任务。
 

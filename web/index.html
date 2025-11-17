@@ -16,6 +16,7 @@
         <!-- 配置区 -->
         <section class="card">
             <h2>⚙️ 配置信息</h2>
+            <p class="section-desc">填写以下信息后，点击"开始监控"即可启动自动下载</p>
 
             <div class="form-group">
                 <label for="github-token">GitHub Personal Access Token *</label>
@@ -35,20 +36,15 @@
             </div>
 
             <div class="form-group">
-                <label for="dropbox-token">Dropbox Access Token *</label>
-                <input type="password" id="dropbox-token" placeholder="sl.xxxxxxxxxx">
-                <small><a href="https://www.dropbox.com/developers/apps" target="_blank">获取 Token</a></small>
-            </div>
-
-            <div class="form-group">
                 <label for="dropbox-path">Dropbox 存储路径</label>
                 <input type="text" id="dropbox-path" value="/photos" placeholder="/photos">
+                <small>照片将保存到 Dropbox 的此路径下</small>
             </div>
 
             <div class="form-group">
                 <label for="interval">检查间隔（分钟）</label>
-                <input type="number" id="interval" value="10" min="10" step="5">
-                <small>最小 10 分钟（避免频繁触发 Actions）</small>
+                <input type="number" id="interval" value="60" min="10" step="10">
+                <small>推荐 60 分钟，可充分利用免费额度。最小 10 分钟</small>
             </div>
 
             <div class="form-group checkbox-group">
@@ -59,7 +55,7 @@
                 <small>勾选后下次运行将清空已下载记录，重新下载所有照片</small>
             </div>
 
-            <button id="save-config-btn" class="btn btn-secondary">💾 保存配置</button>
+            <p class="info-text">💡 提示：点击"开始监控"时会自动保存配置</p>
         </section>
 
         <!-- 控制区 -->
@@ -120,20 +116,6 @@
             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('help-section').style.display='none'">关闭</button>
         </section>
 
-        <!-- Dropbox Secret 设置提示 -->
-        <section class="card warning-section" id="dropbox-warning" style="display: none;">
-            <h2>⚠️ 需要手动配置 Dropbox Secret</h2>
-            <p>由于浏览器限制，无法自动加密 Secret。请按以下步骤手动配置：</p>
-            <ol>
-                <li>访问 GitHub 仓库的 <strong>Settings → Secrets and variables → Actions</strong></li>
-                <li>点击 "New repository secret"</li>
-                <li>Name: <code>DROPBOX_ACCESS_TOKEN</code></li>
-                <li>Value: <input type="text" id="dropbox-token-copy" readonly style="width: 100%; margin: 5px 0;"></li>
-                <li>点击 "Add secret"</li>
-            </ol>
-            <button id="copy-token-btn" class="btn btn-primary btn-sm">📋 复制 Token</button>
-            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('dropbox-warning').style.display='none'">关闭</button>
-        </section>
     </div>
 
     <script src="app.js"></script>

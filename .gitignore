@@ -31,8 +31,10 @@ Thumbs.db                 # Windows
 .pytest_cache/
 
 # Project documentation
+.claude
 CLAUDE.md
 notes.txt
+*.md
 
 # ============================================
 # 重要说明：以下文件不应添加到 .gitignore

@@ -24,13 +24,11 @@ function initElements() {
         githubToken: document.getElementById('github-token'),
         githubRepo: document.getElementById('github-repo'),
         targetUrl: document.getElementById('target-url'),
-        dropboxToken: document.getElementById('dropbox-token'),
         dropboxPath: document.getElementById('dropbox-path'),
         interval: document.getElementById('interval'),
         clearHistory: document.getElementById('clear-history'),
 
         // 按钮
-        saveConfigBtn: document.getElementById('save-config-btn'),
         startBtn: document.getElementById('start-btn'),
         stopBtn: document.getElementById('stop-btn'),
         manualRunBtn: document.getElementById('manual-run-btn'),
@@ -45,17 +43,11 @@ function initElements() {
 
         // 帮助
         tokenHelp: document.getElementById('token-help'),
-        helpSection: document.getElementById('help-section'),
-
-        // Dropbox warning
-        dropboxWarning: document.getElementById('dropbox-warning'),
-        dropboxTokenCopy: document.getElementById('dropbox-token-copy'),
-        copyTokenBtn: document.getElementById('copy-token-btn')
+        helpSection: document.getElementById('help-section')
     };
 }
 
 function setupEventListeners() {
-    elements.saveConfigBtn.addEventListener('click', saveConfig);
     elements.startBtn.addEventListener('click', startMonitoring);
     elements.stopBtn.addEventListener('click', stopMonitoring);
     elements.manualRunBtn.addEventListener('click', manualRun);
@@ -64,46 +56,40 @@ function setupEventListeners() {
         e.preventDefault();
         elements.helpSection.style.display = 'block';
     });
-    elements.copyTokenBtn.addEventListener('click', copyDropboxToken);
 }
 
 // 配置管理
-function saveConfig() {
+function validateAndSaveConfig() {
     const config = {
         githubToken: elements.githubToken.value.trim(),
         githubRepo: elements.githubRepo.value.trim(),
         targetUrl: elements.targetUrl.value.trim(),
-        dropboxToken: elements.dropboxToken.value.trim(),
         dropboxPath: elements.dropboxPath.value.trim() || '/photos',
-        interval: parseInt(elements.interval.value) || 10
+        interval: parseInt(elements.interval.value) || 60
     };
 
     // 验证必填字段
-    if (!config.githubToken || !config.githubRepo || !config.targetUrl || !config.dropboxToken) {
-        alert('请填写所有必填字段（标记 * 的字段）');
-        return;
+    if (!config.githubToken || !config.githubRepo || !config.targetUrl) {
+        alert('❌ 请填写所有必填字段（标记 * 的字段）');
+        return null;
     }
 
     // 验证仓库格式
     if (!config.githubRepo.match(/^[\w-]+\/[\w-]+$/)) {
-        alert('仓库格式错误，应为: owner/repo');
-        return;
+        alert('❌ 仓库格式错误，应为: owner/repo');
+        return null;
     }
 
     // 验证间隔
     if (config.interval < 10) {
-        alert('检查间隔最小为 10 分钟');
-        return;
+        alert('❌ 检查间隔最小为 10 分钟');
+        return null;
     }
 
     // 保存到 localStorage
     localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
 
-    alert('✅ 配置已保存到浏览器本地');
-
-    // 显示 Dropbox Secret 配置提示
-    elements.dropboxTokenCopy.value = config.dropboxToken;
-    elements.dropboxWarning.style.display = 'block';
+    return config;
 }
 
 function loadConfig() {
@@ -115,9 +101,8 @@ function loadConfig() {
         elements.githubToken.value = config.githubToken || '';
         elements.githubRepo.value = config.githubRepo || '';
         elements.targetUrl.value = config.targetUrl || '';
-        elements.dropboxToken.value = config.dropboxToken || '';
         elements.dropboxPath.value = config.dropboxPath || '/photos';
-        elements.interval.value = config.interval || 10;
+        elements.interval.value = config.interval || 60;
     } catch (e) {
         console.error('加载配置失败:', e);
     }
@@ -126,16 +111,10 @@ function loadConfig() {
 function getConfig() {
     const configStr = localStorage.getItem(CONFIG_KEY);
     if (!configStr) {
-        alert('请先保存配置');
+        // 静默返回 null，不弹窗提示
         return null;
     }
     return JSON.parse(configStr);
-}
-
-function copyDropboxToken() {
-    elements.dropboxTokenCopy.select();
-    document.execCommand('copy');
-    alert('✅ Token 已复制到剪贴板');
 }
 
 // GitHub API 调用
@@ -180,7 +159,8 @@ async function githubAPI(path, method = 'GET', body = null) {
 
 // 监控控制
 async function startMonitoring() {
-    const config = getConfig();
+    // 验证并保存配置
+    const config = validateAndSaveConfig();
     if (!config) return;
 
     const confirmMsg = elements.clearHistory.checked
@@ -221,18 +201,10 @@ async function startMonitoring() {
 
     if (!result) return;
 
-    // 2. 提示用户手动设置 Dropbox Secret
-    if (!existing) {
-        // 首次启动，显示 Secret 配置提示
-        elements.dropboxTokenCopy.value = config.dropboxToken;
-        elements.dropboxWarning.style.display = 'block';
-        alert('⚠️ 请按照下方提示手动配置 Dropbox Secret');
-    }
-
-    // 3. 更新 UI
+    // 2. 更新 UI
     updateUIAfterStart();
 
-    alert('✅ 监控已启动！\n\nGitHub Actions 将在配置的间隔后开始执行。\n\n如果是首次启动，请先配置 Dropbox Secret。');
+    alert('✅ 监控已启动！\n\nGitHub Actions 将在配置的间隔后开始执行。');
 
     // 清除 checkbox（首次运行标志仅生效一次）
     elements.clearHistory.checked = false;
@@ -304,7 +276,10 @@ async function manualRun() {
 async function fetchStatus() {
     const config = getConfig();
     if (!config) {
-        elements.logContainer.innerHTML = '<p class="error">请先保存配置</p>';
+        // 没有配置时显示友好提示
+        elements.monitorStatus.textContent = '未配置';
+        elements.monitorStatus.className = 'status-badge status-inactive';
+        elements.logContainer.innerHTML = '<p class="info">👈 请先填写左侧配置信息，然后点击"开始监控"</p>';
         return;
     }
 
