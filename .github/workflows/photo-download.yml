@@ -41,6 +41,11 @@ jobs:
 
       - name: Run GitHub Actions runner
         env:
+          # 推荐方式：使用 Refresh Token（长期有效，自动刷新）
+          DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
+          DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
+          DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
+          # 向后兼容：旧方式 Access Token（4小时有效期，不推荐）
           DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
         run: uv run python github_actions_runner.py
         continue-on-error: true  # 即使运行失败也继续提交配置

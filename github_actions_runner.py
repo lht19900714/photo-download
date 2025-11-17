@@ -219,24 +219,37 @@ async def run_single_cycle():
     task_config = runtime_config.get_task_config()
     target_url = task_config.get('targetUrl', TARGET_URL)
 
-    # 从环境变量读取 Dropbox Token
-    dropbox_token = os.getenv('DROPBOX_ACCESS_TOKEN')
+    # 从环境变量读取 Dropbox 认证信息
+    # 优先使用 Refresh Token（推荐），降级使用 Access Token（旧方式）
+    dropbox_refresh_token = os.getenv('DROPBOX_REFRESH_TOKEN')
+    dropbox_app_key = os.getenv('DROPBOX_APP_KEY')
+    dropbox_app_secret = os.getenv('DROPBOX_APP_SECRET')
+    dropbox_access_token = os.getenv('DROPBOX_ACCESS_TOKEN')  # 向后兼容
     dropbox_path = task_config.get('dropboxPath', '/photos')
 
     # 初始化 Dropbox 客户端
     dropbox_client = None
-    if dropbox_token:
-        logging.info("正在初始化 Dropbox 客户端...")
-        dropbox_client = init_dropbox_client(dropbox_token)
-        if dropbox_client:
-            path_ready = ensure_dropbox_path(dropbox_client, dropbox_path)
-            if not path_ready:
-                logging.warning("⚠️ Dropbox 路径初始化失败，将禁用 Dropbox 功能")
-                dropbox_client = None
-        else:
-            logging.warning("⚠️ Dropbox 客户端初始化失败，将仅使用本地存储")
+    if dropbox_refresh_token and dropbox_app_key and dropbox_app_secret:
+        # 新方式：使用 Refresh Token
+        logging.info("正在初始化 Dropbox 客户端（Refresh Token 模式）...")
+        dropbox_client = init_dropbox_client(
+            refresh_token=dropbox_refresh_token,
+            app_key=dropbox_app_key,
+            app_secret=dropbox_app_secret
+        )
+    elif dropbox_access_token:
+        # 旧方式：使用 Access Token（向后兼容）
+        logging.info("正在初始化 Dropbox 客户端（Access Token 模式）...")
+        dropbox_client = init_dropbox_client(access_token=dropbox_access_token)
     else:
-        logging.info("ℹ️  未配置 Dropbox Token，跳过 Dropbox 上传")
+        logging.info("ℹ️  未配置 Dropbox 认证信息，跳过 Dropbox 上传")
+
+    # 验证 Dropbox 路径
+    if dropbox_client:
+        path_ready = ensure_dropbox_path(dropbox_client, dropbox_path)
+        if not path_ready:
+            logging.warning("⚠️ Dropbox 路径初始化失败，将禁用 Dropbox 功能")
+            dropbox_client = None
 
     downloader = PhotoDownloader(
         PHOTO_DIR,

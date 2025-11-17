@@ -58,35 +58,77 @@ SEPARATOR = "=" * 60
 
 # ============ Dropbox 辅助函数 ============
 
-def init_dropbox_client(access_token: str) -> Optional[object]:
+def init_dropbox_client(access_token: str = None,
+                        refresh_token: str = None,
+                        app_key: str = None,
+                        app_secret: str = None) -> Optional[object]:
     """
-    初始化 Dropbox 客户端
+    初始化 Dropbox 客户端，支持两种认证方式
+
+    方式 1（推荐）：使用 Refresh Token（适合长期运行）
+        - refresh_token: Dropbox Refresh Token
+        - app_key: Dropbox App Key
+        - app_secret: Dropbox App Secret
+
+    方式 2（旧方式）：使用 Access Token（4小时有效期）
+        - access_token: Dropbox Access Token
 
     Args:
-        access_token: Dropbox 访问令牌
+        access_token: Dropbox 访问令牌（旧方式，可选）
+        refresh_token: Dropbox 刷新令牌（新方式，推荐）
+        app_key: Dropbox App Key（新方式需要）
+        app_secret: Dropbox App Secret（新方式需要）
 
     Returns:
         Dropbox 客户端实例，如果初始化失败则返回 None
     """
-    if not access_token:
-        return None
-
     if not DROPBOX_AVAILABLE:
         logging.error("Dropbox SDK 未安装，无法使用 Dropbox 功能")
         logging.error("请运行: uv add dropbox")
         return None
 
-    try:
-        client = dropbox.Dropbox(access_token)
-        # 验证 Token 有效性
-        client.users_get_current_account()
-        return client
-    except dropbox.exceptions.AuthError as e:
-        logging.error(f"Dropbox 认证失败: {e}")
-        logging.error("请检查 DROPBOX_ACCESS_TOKEN 配置是否正确")
-        return None
-    except Exception as e:
-        logging.error(f"Dropbox 客户端初始化失败: {e}")
+    # 优先使用 Refresh Token（推荐方式）
+    if refresh_token and app_key and app_secret:
+        logging.info("📋 使用 Refresh Token 认证（推荐方式）")
+        try:
+            client = dropbox.Dropbox(
+                oauth2_refresh_token=refresh_token,
+                app_key=app_key,
+                app_secret=app_secret
+            )
+            # 验证 Token 有效性
+            account = client.users_get_current_account()
+            logging.info(f"✅ Dropbox 认证成功: {account.name.display_name}")
+            return client
+        except dropbox.exceptions.AuthError as e:
+            logging.error(f"Dropbox Refresh Token 认证失败: {e}")
+            logging.error("请检查 DROPBOX_REFRESH_TOKEN、DROPBOX_APP_KEY 和 DROPBOX_APP_SECRET 配置")
+            return None
+        except Exception as e:
+            logging.error(f"Dropbox 客户端初始化失败: {e}")
+            return None
+
+    # 降级使用 Access Token（旧方式，4小时有效期）
+    elif access_token:
+        logging.warning("⚠️ 使用 Access Token 认证（4小时有效期，不推荐）")
+        logging.warning("⚠️ 建议切换到 Refresh Token 以支持长期运行")
+        try:
+            client = dropbox.Dropbox(access_token)
+            # 验证 Token 有效性
+            account = client.users_get_current_account()
+            logging.info(f"✅ Dropbox 认证成功: {account.name.display_name}")
+            return client
+        except dropbox.exceptions.AuthError as e:
+            logging.error(f"Dropbox 认证失败: {e}")
+            logging.error("请检查 DROPBOX_ACCESS_TOKEN 配置是否正确")
+            logging.error("如果 Token 已过期（4小时），请切换到 Refresh Token 方式")
+            return None
+        except Exception as e:
+            logging.error(f"Dropbox 客户端初始化失败: {e}")
+            return None
+
+    else:
+        logging.info("ℹ️ 未配置 Dropbox 认证信息，跳过 Dropbox 功能")
         return None
 
 
