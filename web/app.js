@@ -171,7 +171,7 @@ async function startMonitoring() {
         return;
     }
 
-    // 1. 创建/更新 runtime-config.json
+    // 1. 创建/更新 runtime-config.json（在 github_action 分支）
     const runtimeConfig = {
         enabled: true,
         interval: config.interval,
@@ -186,8 +186,8 @@ async function startMonitoring() {
 
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(runtimeConfig, null, 2))));
 
-    // 检查文件是否存在
-    const existing = await githubAPI(`/repos/${config.githubRepo}/contents/runtime-config.json`);
+    // 检查文件是否存在（在 github_action 分支）
+    const existing = await githubAPI(`/repos/${config.githubRepo}/contents/runtime-config.json?ref=github_action`);
 
     const result = await githubAPI(
         `/repos/${config.githubRepo}/contents/runtime-config.json`,
@@ -195,6 +195,7 @@ async function startMonitoring() {
         {
             message: 'Enable monitoring',
             content: content,
+            branch: 'github_action',  // 指定提交到 github_action 分支
             sha: existing?.sha  // 如果文件存在，需要提供 SHA
         }
     );
@@ -220,8 +221,8 @@ async function stopMonitoring() {
         return;
     }
 
-    // 读取现有配置
-    const existing = await githubAPI(`/repos/${config.githubRepo}/contents/runtime-config.json`);
+    // 读取现有配置（从 github_action 分支）
+    const existing = await githubAPI(`/repos/${config.githubRepo}/contents/runtime-config.json?ref=github_action`);
     if (!existing) {
         alert('❌ 配置文件不存在，请先启动监控');
         return;
@@ -239,6 +240,7 @@ async function stopMonitoring() {
         {
             message: 'Disable monitoring',
             content: content,
+            branch: 'github_action',  // 指定提交到 github_action 分支
             sha: existing.sha
         }
     );
@@ -284,8 +286,8 @@ async function fetchStatus() {
     }
 
     try {
-        // 读取 runtime-config.json
-        const configFile = await githubAPI(`/repos/${config.githubRepo}/contents/runtime-config.json`);
+        // 读取 runtime-config.json（从 github_action 分支）
+        const configFile = await githubAPI(`/repos/${config.githubRepo}/contents/runtime-config.json?ref=github_action`);
 
         if (!configFile) {
             elements.monitorStatus.textContent = '未初始化';
