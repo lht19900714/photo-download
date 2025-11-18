@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('run-once-btn').addEventListener('click', runOnce);
     refreshAll();
     setInterval(refreshAll, 30000);
+    setInterval(fetchLogs, 5000);
 });
 
 function loadConfig() {
@@ -100,12 +101,12 @@ async function fetchStatus() {
         document.getElementById('interval').textContent = effectiveCfg.check_interval ? `${effectiveCfg.check_interval}s` : '--';
         document.getElementById('started-at').textContent = formatTime(data.started_at);
         document.getElementById('ended-at').textContent = formatTime(data.ended_at);
-        document.getElementById('new-photos').textContent = data.new_photos ?? '--';
+        document.getElementById('url-total').textContent = data.total_photos ?? '--';
         document.getElementById('download-summary').textContent = `${data.download_success ?? '--'} / ${data.download_failed ?? '--'}`;
         document.getElementById('dropbox-summary').textContent = data.dropbox_enabled
             ? `${data.dropbox_uploaded ?? 0} / ${data.dropbox_failed ?? 0}`
             : '未开启';
-        document.getElementById('history-size').textContent = data.history_size ?? '--';
+        document.getElementById('dropbox-total').textContent = data.history_size ?? '--';
         document.getElementById('duration').textContent = data.duration_sec ? `${data.duration_sec}s` : '--';
         document.getElementById('last-error').textContent = data.last_error || '--';
     } catch (e) {

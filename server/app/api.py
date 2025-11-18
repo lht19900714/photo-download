@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import config
-from .log import setup_logging, tail_log
+from .log import get_buffer_lines, setup_logging, tail_log
 from .runner import Runner
 from .state import StateManager
 
@@ -111,6 +111,8 @@ async def get_history(limit: int = 20):
 async def get_logs(tail: int = 200):
     tail = max(10, min(tail, 2000))
     lines = tail_log(log_file, tail=tail)
+    if not lines:
+        lines = get_buffer_lines(tail)
     return {"lines": lines}
 
 
