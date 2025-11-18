@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Photo Downloader 控制台</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Photo Downloader 控制台</h1>
+            <p>查看状态 / 历史 / 日志，并控制运行</p>
+        </header>
+
+        <section class="card">
+            <h2>连接设置</h2>
+            <div class="form-row">
+                <label>API 地址</label>
+                <input id="api-base" placeholder="http://server:8000">
+            </div>
+            <div class="form-row">
+                <label>API Key（可选）</label>
+                <input id="api-key" placeholder="与服务器 API_KEY 一致">
+            </div>
+            <button id="save-config">保存连接并刷新</button>
+        </section>
+
+        <section class="card status-card">
+            <div class="status-header">
+                <h2>运行状态</h2>
+                <span id="running-badge" class="badge">--</span>
+            </div>
+            <div class="grid">
+                <div>
+                    <div class="label">目标 URL</div>
+                    <div id="target-url" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">检查间隔</div>
+                    <div id="interval" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">上次开始</div>
+                    <div id="started-at" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">上次结束</div>
+                    <div id="ended-at" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">新照片</div>
+                    <div id="new-photos" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">下载成功/失败</div>
+                    <div id="download-summary" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">Dropbox</div>
+                    <div id="dropbox-summary" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">历史总数</div>
+                    <div id="history-size" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">耗时</div>
+                    <div id="duration" class="value">--</div>
+                </div>
+                <div>
+                    <div class="label">错误</div>
+                    <div id="last-error" class="value error">--</div>
+                </div>
+            </div>
+            <div class="actions">
+                <button id="start-btn">启动循环</button>
+                <button id="stop-btn">停止循环</button>
+                <button id="run-once-btn">立即运行一次</button>
+                <button id="refresh-btn">刷新状态</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>任务配置（启动前填写）</h2>
+            <div class="form-row">
+                <label>目标 URL *</label>
+                <input id="cfg-target-url" placeholder="https://live.photoplus.cn/...">
+            </div>
+            <div class="form-row">
+                <label>检查间隔（秒） *</label>
+                <input id="cfg-interval" type="number" min="10" step="1" placeholder="例如 120">
+            </div>
+            <div class="form-row">
+                <label>Dropbox 路径 *</label>
+                <input id="cfg-dropbox-path" placeholder="/PhotoPlus/photos">
+            </div>
+            <p class="note">配置仅在启动时生效，运行过程中不可修改；停止后会清空配置。</p>
+        </section>
+
+        <section class="card">
+            <div class="section-header">
+                <h2>最近历史</h2>
+                <button id="refresh-history">刷新</button>
+            </div>
+            <div id="history-list" class="history-list">暂无数据</div>
+        </section>
+
+        <section class="card">
+            <div class="section-header">
+                <h2>日志</h2>
+                <div>
+                    <input id="log-tail" type="number" min="20" max="1000" value="200">
+                    <button id="refresh-logs">刷新日志</button>
+                </div>
+            </div>
+            <pre id="log-container" class="log-container">加载中...</pre>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

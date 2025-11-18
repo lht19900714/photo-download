@@ -1,0 +1,17 @@
+[Unit]
+Description=Photo Downloader Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/photo-download/server
+EnvironmentFile=/path/to/photo-download/server/.env
+ExecStart=/path/to/uv run server/main.py
+Restart=always
+RestartSec=5
+User=photobot
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
