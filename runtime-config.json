@@ -1,9 +1,9 @@
 {
   "enabled": true,
   "interval": 1,
-  "clearHistory": true,
-  "lastRunTime": null,
-  "lastRunSuccess": null,
+  "clearHistory": false,
+  "lastRunTime": "2025-11-18T04:16:30.595476+00:00",
+  "lastRunSuccess": true,
   "taskConfig": {
     "targetUrl": "https://live.photoplus.cn/live/pc/93374906/#/live",
     "dropboxPath": "/photos-test"
