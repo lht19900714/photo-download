@@ -201,12 +201,12 @@ class Runner:
                         "Expires": "0",
                     }
                 )
-            page = await context.new_page()
-            page.set_default_timeout(TIMEOUT)
+                page = await context.new_page()
+                page.set_default_timeout(TIMEOUT)
 
-            logging.info("访问页面...")
-            await page.goto(cfg["target_url"], wait_until="domcontentloaded")
-            await page.wait_for_timeout(PAGE_RENDER_WAIT)
+                logging.info("访问页面...")
+                await page.goto(cfg["target_url"], wait_until="domcontentloaded")
+                await page.wait_for_timeout(PAGE_RENDER_WAIT)
 
                 # 快速扫描指纹
                 logging.info("扫描照片指纹...")
