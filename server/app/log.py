@@ -2,22 +2,33 @@ import logging
 from collections import deque
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import List
+from typing import Deque, List, Tuple
 
 
 class _MemoryLogHandler(logging.Handler):
     def __init__(self, capacity: int = 1000):
         super().__init__()
-        self.buffer = deque(maxlen=capacity)
+        self.buffer: Deque[Tuple[int, str]] = deque(maxlen=capacity)
+        self._counter = 0
 
     def emit(self, record: logging.LogRecord) -> None:
         msg = self.format(record)
-        self.buffer.append(msg + "\n")
+        self._counter += 1
+        self.buffer.append((self._counter, msg + "\n"))
 
     def tail(self, count: int) -> List[str]:
         if count <= 0:
             return []
-        return list(self.buffer)[-count:]
+        return [line for _, line in list(self.buffer)[-count:]]
+
+    def since(self, last_seq: int) -> Tuple[List[str], int]:
+        lines: List[str] = []
+        new_seq = last_seq
+        for seq, line in self.buffer:
+            if seq > last_seq:
+                lines.append(line)
+                new_seq = seq
+        return lines, new_seq
 
 
 _memory_handler: _MemoryLogHandler | None = None
@@ -29,10 +40,6 @@ def setup_logging(log_dir: Path, log_level: str = "INFO") -> Path:
     """
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "run.log"
-
-    # 避免重复添加 handler
-    if logging.getLogger().handlers:
-        return log_file
 
     formatter = logging.Formatter(
         fmt="%(asctime)s [%(levelname)s] %(message)s",
@@ -55,10 +62,17 @@ def setup_logging(log_dir: Path, log_level: str = "INFO") -> Path:
         _memory_handler = _MemoryLogHandler(capacity=2000)
         _memory_handler.setFormatter(formatter)
 
-    logging.basicConfig(
-        level=getattr(logging, log_level.upper(), logging.INFO),
-        handlers=[console_handler, file_handler, _memory_handler],
-    )
+    root = logging.getLogger()
+    root.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+
+    # 避免重复添加相同类型的 handler
+    handler_types = {type(h) for h in root.handlers}
+    if RotatingFileHandler not in handler_types:
+        root.addHandler(file_handler)
+    if logging.StreamHandler not in handler_types:
+        root.addHandler(console_handler)
+    if _MemoryLogHandler not in handler_types:
+        root.addHandler(_memory_handler)
 
     return log_file
 
@@ -80,3 +94,9 @@ def get_buffer_lines(tail: int = 200) -> List[str]:
     if _memory_handler is None:
         return []
     return _memory_handler.tail(tail)
+
+
+def get_buffer_since(last_seq: int) -> Tuple[List[str], int]:
+    if _memory_handler is None:
+        return [], last_seq
+    return _memory_handler.since(last_seq)

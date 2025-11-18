@@ -2,6 +2,8 @@ const STORAGE_KEY = 'photo_downloader_server_config';
 
 let cfg = { apiBase: '', apiKey: '' };
 let running = false;
+let logBuffer = [];
+const LOG_MAX_LINES = 500;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadConfig();
@@ -174,7 +176,8 @@ async function fetchLogs() {
         const tail = parseInt(document.getElementById('log-tail').value) || 200;
         const res = await apiFetch(`/api/logs?tail=${tail}`);
         const lines = res.lines || [];
-        document.getElementById('log-container').textContent = lines.join('');
+        logBuffer = lines.map(line => line.replace(/\n$/, ''));
+        renderLogBuffer();
     } catch (e) {
         document.getElementById('log-container').textContent = `加载日志失败：${e.message}`;
     }
@@ -218,5 +221,13 @@ async function runOnce() {
         await refreshAll();
     } catch (e) {
         alert(`运行失败: ${e.message}`);
+    }
+}
+
+function renderLogBuffer(autoScroll = false) {
+    const container = document.getElementById('log-container');
+    container.textContent = logBuffer.join('\n');
+    if (autoScroll) {
+        container.scrollTop = container.scrollHeight;
     }
 }

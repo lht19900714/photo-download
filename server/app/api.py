@@ -53,11 +53,11 @@ def _parse_config_payload(payload: Optional[dict]) -> dict:
 
 def require_api_key(request: Request):
     """
-    简单鉴权：如果设置了 API_KEY，则需要请求头 x-api-key 匹配。
+    简单鉴权：如果设置了 API_KEY，则需要请求头或查询参数匹配。
     """
     if not API_KEY:
         return
-    header_key = request.headers.get("x-api-key", "")
+    header_key = request.headers.get("x-api-key", "") or request.query_params.get("api_key", "")
     if header_key != API_KEY:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
