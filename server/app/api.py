@@ -144,6 +144,17 @@ async def stop_loop(_: Optional[str] = Depends(require_api_key)):
     return {"message": "stopped"}
 
 
+@app.post("/api/history/clear")
+async def clear_history(_: Optional[str] = Depends(require_api_key)):
+    if runner.is_running():
+        raise HTTPException(status_code=400, detail="monitor is running，请先停止循环")
+    try:
+        result = runner.clear_download_history()
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return {"message": "history cleared", "result": result}
+
+
 @app.post("/api/control/run-once")
 async def run_once(
     payload: dict,

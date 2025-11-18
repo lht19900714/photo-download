@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('start-btn').addEventListener('click', startLoop);
     document.getElementById('stop-btn').addEventListener('click', stopLoop);
     document.getElementById('run-once-btn').addEventListener('click', runOnce);
+    document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
     refreshAll();
     setInterval(refreshAll, 30000);
     setInterval(fetchLogs, 5000);
@@ -66,16 +67,19 @@ function setBadge(running) {
     const badge = document.getElementById('running-badge');
     const startBtn = document.getElementById('start-btn');
     const stopBtn = document.getElementById('stop-btn');
+    const clearBtn = document.getElementById('clear-history-btn');
     if (running) {
         badge.textContent = '运行中';
         badge.className = 'badge active';
         startBtn.disabled = true;
         stopBtn.disabled = false;
+        clearBtn.disabled = true;
     } else {
         badge.textContent = '已停止';
         badge.className = 'badge inactive';
         startBtn.disabled = false;
         stopBtn.disabled = true;
+        clearBtn.disabled = false;
     }
 }
 
@@ -223,6 +227,23 @@ async function runOnce() {
         await refreshAll();
     } catch (e) {
         alert(`运行失败: ${e.message}`);
+    }
+}
+
+async function clearHistory() {
+    if (running) {
+        alert('监控循环正在运行，无法清空历史，请先停止。');
+        return;
+    }
+    if (!confirm('确定要清空历史记录吗？该操作会删除已下载指纹并清空本地缓存照片。')) {
+        return;
+    }
+    try {
+        await apiFetch('/api/history/clear', { method: 'POST' });
+        alert('历史记录已清空');
+        await refreshAll();
+    } catch (e) {
+        alert(`清空历史失败: ${e.message}`);
     }
 }
 

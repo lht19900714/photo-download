@@ -118,6 +118,45 @@ class Runner:
             self._active_config = None
             self.state.clear_runtime_config()
 
+    def clear_download_history(self) -> dict:
+        """
+        清除下载历史文件和本地缓存照片，仅允许在循环停止时执行。
+        """
+        if self.is_running():
+            raise RuntimeError("监控正在运行，请先停止循环后再清空历史")
+
+        result = {
+            "history_file": DOWNLOADED_HISTORY,
+            "history_deleted": False,
+            "photo_dir": PHOTO_DIR,
+            "photo_dir_deleted": False,
+            "errors": [],
+        }
+
+        if os.path.exists(DOWNLOADED_HISTORY):
+            try:
+                os.remove(DOWNLOADED_HISTORY)
+                result["history_deleted"] = True
+                logging.info("手动清理: 已删除历史记录文件")
+            except OSError as e:
+                logging.error(f"清理历史记录文件失败: {e}")
+                result["errors"].append(f"history: {e}")
+
+        if SAVE_TO_LOCAL and os.path.exists(PHOTO_DIR):
+            import shutil
+
+            try:
+                shutil.rmtree(PHOTO_DIR)
+                result["photo_dir_deleted"] = True
+                logging.info("手动清理: 已删除本地照片目录")
+            except OSError as e:
+                logging.error(f"清理本地照片目录失败: {e}")
+                result["errors"].append(f"photos: {e}")
+
+        # 重置标记，确保下次运行时 FRESH_START 逻辑仍可重新触发
+        self._cleared = False
+        return result
+
     async def _loop(self):
         logging.info("后台循环已启动")
         while not self._stop_event.is_set():
