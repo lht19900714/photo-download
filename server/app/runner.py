@@ -7,11 +7,9 @@ from typing import Optional
 from playwright.async_api import async_playwright
 
 from .config import (
-    TARGET_URL,
     CHECK_INTERVAL,
     PHOTO_DIR,
     DOWNLOADED_HISTORY,
-    MAX_CONNECTION_FAILURES,
     HEADLESS,
     TIMEOUT,
     PAGE_RENDER_WAIT,
@@ -19,7 +17,6 @@ from .config import (
     DROPBOX_REFRESH_TOKEN,
     DROPBOX_APP_KEY,
     DROPBOX_APP_SECRET,
-    DROPBOX_SAVE_PATH,
     SAVE_TO_LOCAL,
     FRESH_START,
 )
@@ -47,31 +44,55 @@ class Runner:
         self._cleared = False  # FRESH_START 仅首次生效
         self._lock = asyncio.Lock()
         self._active_config: Optional[dict] = None
-        self._default_config = {
-            "target_url": TARGET_URL,
-            "check_interval": CHECK_INTERVAL,
-            "dropbox_save_path": DROPBOX_SAVE_PATH,
-        }
 
     def is_running(self) -> bool:
         return self._task is not None and not self._task.done()
 
     def _current_config(self) -> dict:
-        return self._active_config or self.state.load_runtime_config() or self._default_config
+        if not self._active_config:
+            raise RuntimeError("运行配置尚未初始化")
+        return self._active_config
+
+    def _normalize_config(self, raw: Optional[dict]) -> dict:
+        if not raw:
+            raise ValueError("缺少运行配置")
+
+        target_url = str(raw.get("target_url", "")).strip()
+        dropbox_path = str(raw.get("dropbox_save_path", "")).strip()
+        try:
+            interval = int(raw.get("check_interval", 0))
+        except (TypeError, ValueError):
+            interval = 0
+
+        if not target_url:
+            raise ValueError("目标 URL 不能为空")
+        if not dropbox_path:
+            raise ValueError("Dropbox 路径不能为空")
+        if interval <= 0:
+            raise ValueError("检查间隔必须大于 0")
+
+        return {
+            "target_url": target_url,
+            "dropbox_save_path": dropbox_path,
+            "check_interval": interval,
+        }
+
+    def _activate_config(self, raw: Optional[dict], persist: bool) -> dict:
+        cfg = self._normalize_config(raw)
+        self._active_config = cfg
+        if persist:
+            self.state.save_runtime_config(cfg)
+        return cfg
 
     async def start(self, config_override: Optional[dict] = None) -> bool:
         if self.is_running():
             return False
         if config_override:
-            self._active_config = {
-                "target_url": config_override.get("target_url", TARGET_URL),
-                "check_interval": int(config_override.get("check_interval", CHECK_INTERVAL)),
-                "dropbox_save_path": config_override.get("dropbox_save_path", DROPBOX_SAVE_PATH),
-            }
-            self.state.save_runtime_config(self._active_config)
+            self._activate_config(config_override, persist=True)
         else:
-            # 启动时如果没有新配置，尝试加载已有 runtime 配置，否则用默认
-            self._active_config = self.state.load_runtime_config() or self._default_config
+            # 启动时如未传入配置，则尝试读取已有 runtime config
+            stored = self.state.load_runtime_config()
+            self._activate_config(stored, persist=False)
 
         self._stop_event.clear()
         self._task = asyncio.create_task(self._loop())
@@ -89,16 +110,13 @@ class Runner:
         return True
 
     async def run_once(self, config_override: Optional[dict] = None) -> dict:
-        if config_override:
-            self._active_config = {
-                "target_url": config_override.get("target_url", TARGET_URL),
-                "check_interval": int(config_override.get("check_interval", CHECK_INTERVAL)),
-                "dropbox_save_path": config_override.get("dropbox_save_path", DROPBOX_SAVE_PATH),
-            }
-        else:
-            self._active_config = self.state.load_runtime_config() or self._default_config
-        async with self._lock:
-            return await self._run_cycle()
+        self._activate_config(config_override, persist=True)
+        try:
+            async with self._lock:
+                return await self._run_cycle()
+        finally:
+            self._active_config = None
+            self.state.clear_runtime_config()
 
     async def _loop(self):
         logging.info("后台循环已启动")
@@ -164,7 +182,7 @@ class Runner:
 
         # Dropbox
         dropbox_client = None
-        dropbox_path = cfg.get("dropbox_save_path", DROPBOX_SAVE_PATH)
+        dropbox_path = cfg["dropbox_save_path"]
         if DROPBOX_REFRESH_TOKEN and DROPBOX_APP_KEY and DROPBOX_APP_SECRET:
             logging.info("正在初始化 Dropbox (Refresh Token)...")
             dropbox_client = init_dropbox_client(
@@ -188,7 +206,6 @@ class Runner:
             dropbox_path=dropbox_path,
         )
 
-        connection_failures = 0
         success = False
 
         try:
@@ -272,7 +289,6 @@ class Runner:
                 )
 
         except Exception as e:
-            connection_failures += 1
             logging.error(f"任务执行失败: {e}")
             import traceback
             traceback.print_exc()

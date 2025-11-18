@@ -1,9 +1,11 @@
+import logging
 import os
 from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import config
 from .log import setup_logging, tail_log
@@ -13,6 +15,7 @@ from .state import StateManager
 BASE_DIR = Path(__file__).resolve().parents[1]
 STATE_DIR = Path(os.getenv("STATE_DIR", BASE_DIR / "state"))
 LOG_DIR = Path(os.getenv("LOG_DIR", BASE_DIR / "logs"))
+WEB_DIR = Path(os.getenv("WEB_DIR", BASE_DIR / "web"))
 API_KEY = os.getenv("API_KEY", "").strip()
 AUTO_START = os.getenv("AUTO_START", "true").lower() in {"1", "true", "yes", "on"}
 
@@ -21,6 +24,31 @@ state_manager = StateManager(STATE_DIR)
 runner = Runner(state_manager)
 
 app = FastAPI(title="Photo Downloader Service")
+
+
+def _parse_config_payload(payload: Optional[dict]) -> dict:
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="缺少配置参数")
+
+    target_url = str(payload.get("target_url", "")).strip()
+    dropbox_path = str(payload.get("dropbox_save_path", "")).strip()
+    try:
+        interval = int(payload.get("check_interval", 0))
+    except (TypeError, ValueError):
+        interval = 0
+
+    if not target_url:
+        raise HTTPException(status_code=400, detail="target_url 为必填")
+    if interval <= 0:
+        raise HTTPException(status_code=400, detail="check_interval 需为正整数")
+    if not dropbox_path:
+        raise HTTPException(status_code=400, detail="dropbox_save_path 为必填")
+
+    return {
+        "target_url": target_url,
+        "dropbox_save_path": dropbox_path,
+        "check_interval": interval,
+    }
 
 
 def require_api_key(request: Request):
@@ -40,7 +68,14 @@ def require_api_key(request: Request):
 @app.on_event("startup")
 async def on_startup():
     if AUTO_START:
-        await runner.start()
+        cfg = state_manager.load_runtime_config()
+        if cfg:
+            try:
+                await runner.start(cfg)
+            except ValueError as e:
+                logging.warning(f"AUTO_START 配置无效，跳过自动启动: {e}")
+        else:
+            logging.info("AUTO_START 启用但未找到 runtime-config.json，等待手动启动")
 
 
 @app.on_event("shutdown")
@@ -87,26 +122,13 @@ async def start_loop(
     if runner.is_running():
         raise HTTPException(status_code=400, detail="monitor is already running")
 
-    target_url = payload.get("target_url", "").strip()
-    dropbox_path = payload.get("dropbox_save_path", "").strip()
+    config_override = _parse_config_payload(payload)
+
     try:
-        interval = int(payload.get("check_interval", 0))
-    except (TypeError, ValueError):
-        interval = 0
+        started = await runner.start(config_override=config_override)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
-    if not target_url:
-        raise HTTPException(status_code=400, detail="target_url is required")
-    if interval <= 0:
-        raise HTTPException(status_code=400, detail="check_interval must be > 0")
-    if not dropbox_path:
-        raise HTTPException(status_code=400, detail="dropbox_save_path is required")
-
-    config_override = {
-        "target_url": target_url,
-        "check_interval": interval,
-        "dropbox_save_path": dropbox_path,
-    }
-    started = await runner.start(config_override=config_override)
     if not started:
         return JSONResponse({"message": "already running"}, status_code=200)
     return {"message": "started", "config": config_override}
@@ -125,19 +147,12 @@ async def run_once(
     payload: dict,
     _: Optional[str] = Depends(require_api_key),
 ):
-    config_override = None
-    if payload:
-        config_override = {
-            "target_url": payload.get("target_url", config.TARGET_URL),
-            "check_interval": payload.get("check_interval", config.CHECK_INTERVAL),
-            "dropbox_save_path": payload.get("dropbox_save_path", config.DROPBOX_SAVE_PATH),
-        }
-    # 避免与后台循环并发执行
-    await runner.stop()
+    if runner.is_running():
+        raise HTTPException(status_code=400, detail="monitor is running，请先停止循环")
+
+    config_override = _parse_config_payload(payload)
+
     result = await runner.run_once(config_override=config_override)
-    # run_once 结束后不保存运行时配置
-    runner._active_config = None
-    state_manager.clear_runtime_config()
     return {"message": "completed", "result": result}
 
 
@@ -154,3 +169,9 @@ async def get_config():
             "editable": not runner.is_running(),  # 运行时不允许修改
         },
     }
+
+
+if WEB_DIR.exists():
+    app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
+else:
+    logging.warning(f"静态资源目录不存在: {WEB_DIR}, 将仅提供 API 接口")

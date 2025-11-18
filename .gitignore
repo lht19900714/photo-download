@@ -37,7 +37,7 @@ notes.txt
 *.md
 
 # Server environment
-server/env
+server/.env
 
 # ============================================
 # 重要说明：以下文件不应添加到 .gitignore

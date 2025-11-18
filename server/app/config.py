@@ -16,11 +16,11 @@ def _as_int(value: str, default: int) -> int:
         return default
 
 
-# 目标网站
-TARGET_URL = os.getenv("TARGET_URL", "https://live.photoplus.cn/live/pc/93374906/#/live")
+# 目标网站（通常由前端在启动任务时注入）
+TARGET_URL = os.getenv("TARGET_URL", "")
 
-# 检查间隔（秒）
-CHECK_INTERVAL = _as_int(os.getenv("CHECK_INTERVAL"), 20)
+# 检查间隔（秒，前端启动前填写）
+CHECK_INTERVAL = _as_int(os.getenv("CHECK_INTERVAL"), 60)
 
 # 存储路径
 PHOTO_DIR = os.getenv("PHOTO_DIR", "./photos")
@@ -62,8 +62,8 @@ DROPBOX_REFRESH_TOKEN = os.getenv("DROPBOX_REFRESH_TOKEN", "")
 DROPBOX_APP_KEY = os.getenv("DROPBOX_APP_KEY", "")
 DROPBOX_APP_SECRET = os.getenv("DROPBOX_APP_SECRET", "")
 
-# Dropbox 存储路径
-DROPBOX_SAVE_PATH = os.getenv("DROPBOX_SAVE_PATH", "/PhotoPlus/photos")
+# Dropbox 存储路径（前端启动前填写）
+DROPBOX_SAVE_PATH = os.getenv("DROPBOX_SAVE_PATH", "")
 
 # 是否同时保存到本地 photos/ 目录
 SAVE_TO_LOCAL = _as_bool(os.getenv("SAVE_TO_LOCAL"), False)
