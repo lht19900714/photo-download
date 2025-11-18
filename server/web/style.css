@@ -39,12 +39,27 @@ button:hover { background: #1d4ed8; }
 button:disabled { background: #9db5f5; cursor: not-allowed; }
 .status-card .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
 }
+.status-card .grid > div {
+    min-width: 0;
+}
 .label { color: #52606d; font-size: 14px; }
-.value { font-size: 16px; font-weight: 600; min-height: 20px; }
+.value {
+    font-size: 16px;
+    font-weight: 600;
+    min-height: 20px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
 .error { color: #d14343; }
+.value.error {
+    white-space: pre-wrap;
+    max-height: 72px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
 .actions { margin-top: 12px; }
 .badge {
     padding: 6px 10px;
