@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "interval": 1,
   "clearHistory": false,
   "lastRunTime": "2025-11-18T04:48:12.631702+00:00",
