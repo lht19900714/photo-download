@@ -95,12 +95,14 @@ async function fetchStatus() {
         setBadge(running);
 
         const cfgRuntime = data.config || {};
-        const effectiveCfg = cfgRuntime;
+        const effectiveCfg = cfgRuntime && Object.keys(cfgRuntime).length ? cfgRuntime : null;
 
-        fillConfigInputs(effectiveCfg, !running);
+        if (running || effectiveCfg) {
+            fillConfigInputs(effectiveCfg || cfgRuntime, !running);
+        }
 
-        document.getElementById('target-url').textContent = effectiveCfg.target_url || '--';
-        document.getElementById('interval').textContent = effectiveCfg.check_interval ? `${effectiveCfg.check_interval}s` : '--';
+        document.getElementById('target-url').textContent = (effectiveCfg && effectiveCfg.target_url) || '--';
+        document.getElementById('interval').textContent = effectiveCfg && effectiveCfg.check_interval ? `${effectiveCfg.check_interval}s` : '--';
         document.getElementById('started-at').textContent = formatTime(data.started_at);
         document.getElementById('ended-at').textContent = formatTime(data.ended_at);
         document.getElementById('url-total').textContent = data.total_photos ?? '--';
